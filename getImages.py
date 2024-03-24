@@ -46,7 +46,7 @@ def main():
     image_path = os.path.join(dir_path, "images")
     create_folder(image_path)
 
-    client = labelbox.Client(api_key='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiJjbHQ2MmdoaGowMnlsMDd2Y2VxMHY2Ymh6Iiwib3JnYW5pemF0aW9uSWQiOiJjbHQ2MmdoaGEwMnlrMDd2Yzd1NGViaDl5IiwiYXBpS2V5SWQiOiJjbHR3OGtpbmQxMTd5MDcwcTFwMTMzamsyIiwic2VjcmV0IjoiY2RiYjlmNDA2NzFkMDljOTZlYzg0YTc5N2U3M2ExNDkiLCJpYXQiOjE3MTA3MjM0NDUsImV4cCI6MjM0MTg3NTQ0NX0.ksu2f4xC8RILe45TZoQ7nTsIKEPy8_n3S1QPNb0d47M')
+    client = labelbox.Client(api_key='ur api')
     params = {
         "data_row_details": False,
         "metadata_fields": False,
