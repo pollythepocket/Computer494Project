@@ -6,7 +6,7 @@
 
     (Also, if you don't see your work in the "done" section, that menas it was not approved. I don't know why it does this, but you have to manually accept them all after you annotate)
 
-#BERT Results:
+BERT Results:
     Test Metrics:
     Accuracy: 0.510752688172043
     Precision: 0.5487821579896485
