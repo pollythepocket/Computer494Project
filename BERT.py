@@ -14,7 +14,6 @@ from sklearn.preprocessing import LabelEncoder
 import re
 import random
 from torchvision.transforms import functional as F
-from collections import defaultdict
 
 def create_folder(image_path):
     CHECK_FOLDER = os.path.isdir(image_path)
@@ -28,7 +27,7 @@ dir_path = os.path.dirname(os.path.realpath(__file__))
 image_path = os.path.join(dir_path, "images")
 create_folder(image_path)
 
-client = labelbox.Client(api_key='ur api')
+client = labelbox.Client(api_key='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiJjbHQ2MmdoaGowMnlsMDd2Y2VxMHY2Ymh6Iiwib3JnYW5pemF0aW9uSWQiOiJjbHQ2MmdoaGEwMnlrMDd2Yzd1NGViaDl5IiwiYXBpS2V5SWQiOiJjbHR3OGtpbmQxMTd5MDcwcTFwMTMzamsyIiwic2VjcmV0IjoiY2RiYjlmNDA2NzFkMDljOTZlYzg0YTc5N2U3M2ExNDkiLCJpYXQiOjE3MTA3MjM0NDUsImV4cCI6MjM0MTg3NTQ0NX0.ksu2f4xC8RILe45TZoQ7nTsIKEPy8_n3S1QPNb0d47M')
 params = {
     "data_row_details": False,
     "metadata_fields": False,
@@ -38,32 +37,6 @@ params = {
     "label_details": True,
     "interpolated_frames": False
 }
-
-def calculate_metrics_per_class(y_true, y_pred):
-    # Initialize dictionaries to store metrics per class
-    class_metrics = defaultdict(dict)
-
-    # Calculate metrics for each class
-    for class_id in np.unique(y_true):
-        indices = np.where(y_true == class_id)
-        class_true = y_true[indices]
-        class_pred = y_pred[indices]
-
-        # Calculate metrics
-        class_accuracy = accuracy_score(class_true, class_pred)
-        class_precision = precision_score(class_true, class_pred, average=None)
-        class_recall = recall_score(class_true, class_pred, average=None)
-        class_f1 = f1_score(class_true, class_pred, average=None)
-
-        # Store metrics in dictionary
-        class_metrics[class_id] = {
-            'accuracy': class_accuracy,
-            'precision': class_precision,
-            'recall': class_recall,
-            'f1-score': class_f1
-        }
-
-    return class_metrics
 
 def download_and_save_image(image_url, image_name, image_dir):
     image_path = os.path.join(image_dir, image_name)
@@ -79,22 +52,6 @@ def download_and_save_image(image_url, image_name, image_dir):
             print(f"Failed to download image from {image_url}")
             return False
     return True
-
-# Define augmentation functions
-def rotate_image(image):
-    angle = random.randint(-15, 15)
-    return F.rotate(image, angle)
-
-def flip_image(image):
-    if random.random() < 0.5:
-        return F.hflip(image)
-    else:
-        return F.vflip(image)
-
-def augment_image(image):
-    image = rotate_image(image)
-    image = flip_image(image)
-    return image
 
 # Modify preprocess_data function to apply augmentation
 def preprocess_data(data, image_dir):
@@ -115,8 +72,6 @@ def preprocess_data(data, image_dir):
                                 text_from_image = extract_text_from_image(os.path.join(image_dir, image_path))
                                 # Data augmentation
                                 image = Image.open(os.path.join(image_dir, image_path))
-                                # augmented_image = augment_image(image)
-                                # augmented_image.save(os.path.join(image_dir, image_path))  # Overwrite the original image
                                 texts.append(text_from_image)
                                 labels.append(radio_answer['name'])
 
@@ -213,24 +168,12 @@ else:
     val_recall = recall_score(val_labels, val_preds, average='macro', zero_division=0)
     val_f1 = f1_score(val_labels, val_preds, average='macro', zero_division=0)
 
-    # Calculate metrics per class on the validation set
-    val_class_metrics = calculate_metrics_per_class(val_labels, val_preds)
 
-    # Print validation metrics
     print("Validation Metrics:")
     print(f"Accuracy: {val_accuracy}")
     print(f"Precision: {val_precision}")
     print(f"Recall: {val_recall}")
     print(f"F1-score: {val_f1}")
-
-    # Print metrics per class for validation set
-    print("\nMetrics for each symptom class in validation set:")
-    for class_id, metrics in val_class_metrics.items():
-        print(f"\nClass {class_id}:")
-        print(f"Accuracy: {metrics['accuracy']:.2f}")
-        print(f"Precision: {metrics['precision'][0]:.2f}")
-        print(f"Recall: {metrics['recall'][0]:.2f}")
-        print(f"F1-score: {metrics['f1-score'][0]:.2f}")
 
     # Evaluate the model on the test set
     test_preds, test_labels = [], []
@@ -249,21 +192,9 @@ else:
     test_recall = recall_score(test_labels, test_preds, average='macro', zero_division=0)
     test_f1 = f1_score(test_labels, test_preds, average='macro', zero_division=0)
 
-    # Calculate metrics per class on the test set
-    test_class_metrics = calculate_metrics_per_class(test_labels, test_preds)
 
-    # Print test metrics
     print("\nTest Metrics:")
     print(f"Accuracy: {test_accuracy}")
     print(f"Precision: {test_precision}")
     print(f"Recall: {test_recall}")
     print(f"F1-score: {test_f1}")
-
-    # Print metrics per class for test set
-    print("\nMetrics for each symptom class in test set:")
-    for class_id, metrics in test_class_metrics.items():
-        print(f"\nClass {class_id}:")
-        print(f"Accuracy: {metrics['accuracy']:.2f}")
-        print(f"Precision: {metrics['precision'][0]:.2f}")
-        print(f"Recall: {metrics['recall'][0]:.2f}")
-        print(f"F1-score: {metrics['f1-score'][0]:.2f}")

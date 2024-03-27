@@ -15,6 +15,8 @@ import re
 import random
 from torchvision.transforms import functional as F
 
+label_encoder = LabelEncoder()
+
 def create_folder(image_path):
     CHECK_FOLDER = os.path.isdir(image_path)
     # If folder doesn't exist, then create it.
@@ -57,7 +59,7 @@ def download_and_save_image(image_url, image_name, image_dir):
 def preprocess_data(data, image_dir):
     texts = []
     labels = []
-    label_encoder = LabelEncoder()
+    global label_encoder
 
     for project_data in data:
         for project_id, project_info in project_data['projects'].items():
@@ -149,6 +151,11 @@ else:
             loss.backward()
             optimizer.step()
 
+    
+    # Decode the numerical labels back to their original names
+    decoded_val_labels = label_encoder.inverse_transform(val_labels)
+    decoded_test_labels = label_encoder.inverse_transform(test_labels)
+
 
     # Evaluate the model on the validation set
     model.eval()
@@ -169,9 +176,9 @@ else:
     val_f1 = f1_score(val_labels, val_preds, average=None, zero_division=0)
 
     # Print metrics per class for validation set
-    print("Validation Metrics per Class:")
+    print("\nValidation Metrics per Class:")
     print(f"Total Accuracy: {val_accuracy}")
-    for label, precision, recall, f1 in zip(range(len(val_precision)), val_precision, val_recall, val_f1):
+    for label, precision, recall, f1 in zip(decoded_val_labels, val_precision, val_recall, val_f1):
         print(f"Class {label}: Precision={precision}, Recall={recall}, F1-score={f1}")
 
     # Calculate and print overall metrics for validation set
@@ -204,7 +211,7 @@ else:
     # Print metrics per class for test set
     print("\nTest Metrics per Class:")
     print(f"Total Accuracy: {test_accuracy}")
-    for label, precision, recall, f1 in zip(range(len(test_precision)), test_precision, test_recall, test_f1):
+    for label, precision, recall, f1 in zip(decoded_test_labels, test_precision, test_recall, test_f1):
         print(f"Class {label}: Precision={precision}, Recall={recall}, F1-score={f1}")
 
     # Calculate and print overall metrics for test set
@@ -216,4 +223,3 @@ else:
     print(f"Total Precision: {test_total_precision}")
     print(f"Total Recall: {test_total_recall}")
     print(f"Total F1-score: {test_total_f1}")
-
